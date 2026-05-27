@@ -664,11 +664,10 @@ func StartLocalShellProc(logCtx context.Context, termSize waveobj.TermSize, cmdS
 			"XDG_DATA_HOME":   filepath.Join(home, ".local", "share"),
 			"XDG_CACHE_HOME":  filepath.Join(home, ".cache"),
 		}
-		// We only want to set the XDG variables from the PAM environment, all others should already be correct or may have been overridden by something else out of our control. PAM values override our spec defaults when present; empty PAM values are ignored so we never write "" into the child env.
+		// Only the *_HOME vars are corrected here. PAM overrides our spec defaults when it provides a non-empty value; empty PAM values are ignored so we never write "" into the child env. *_DIRS and RUNTIME_DIR are intentionally left to inheritance — tryGetPamEnvVars synthesizes spec-bare defaults for those, which would override the richer snap-rewritten or session values that wavesrv already carries.
 		for k, v := range tryGetPamEnvVars() {
 			switch k {
-			case "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME",
-				"XDG_RUNTIME_DIR", "XDG_CONFIG_DIRS", "XDG_DATA_DIRS":
+			case "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME":
 				if v != "" {
 					varsToReplace[k] = v
 				}
